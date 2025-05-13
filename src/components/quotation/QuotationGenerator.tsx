@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Check, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const QuotationGenerator: React.FC = () => {
   const [age, setAge] = useState(35);
@@ -197,3 +198,4 @@ const QuotationGenerator: React.FC = () => {
 };
 
 export default QuotationGenerator;
+
