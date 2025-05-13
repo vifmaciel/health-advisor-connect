@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Send, Paperclip, Phone, Video } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
@@ -31,6 +30,7 @@ export interface QuotationData {
   totalPrice?: number;
   participation?: boolean;
   planType?: string;
+  recommended?: boolean;
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ clientInfo }) => {

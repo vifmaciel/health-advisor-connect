@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
-import { Check, Plus, Send, MessageSquare, ArrowDown, ArrowUp } from 'lucide-react';
+import { Check, Plus, Send, MessageSquare, ArrowDown, ArrowUp, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { QuotationData } from '../chat/ChatInterface';
@@ -24,18 +24,23 @@ interface QuotationGeneratorProps {
   clientInfo: ClientInfo;
 }
 
+interface AgeTag {
+  id: string;
+  age: number;
+  relation: string;
+}
+
 const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) => {
-  const [age, setAge] = useState(clientInfo.age || 35);
-  const [dependents, setDependents] = useState(clientInfo.dependents || 2);
+  const [newAge, setNewAge] = useState('');
+  const [newRelation, setNewRelation] = useState('Titular');
+  const [ageTags, setAgeTags] = useState<AgeTag[]>([
+    { id: '1', age: clientInfo.age || 35, relation: 'Titular' }
+  ]);
   const [planType, setPlanType] = useState('pf');
+  const [region, setRegion] = useState('sp');
+  const [companySize, setCompanySize] = useState('1-10');
   const [showAllPlans, setShowAllPlans] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
-  
-  const dependentAges = [
-    { relation: 'Cônjuge', age: 38 },
-    { relation: 'Filho(a)', age: 12 },
-    { relation: 'Filho(a)', age: 8 }
-  ];
   
   const [generatedQuotes, setGeneratedQuotes] = useState<Array<QuotationData>>([
     {
@@ -88,9 +93,31 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
       planType: 'pf'
     }
   ]);
+
+  const addAgeTag = () => {
+    if (newAge && parseInt(newAge) > 0) {
+      const newTag: AgeTag = {
+        id: Date.now().toString(),
+        age: parseInt(newAge),
+        relation: newRelation
+      };
+      setAgeTags([...ageTags, newTag]);
+      setNewAge('');
+      setNewRelation(ageTags.length === 0 ? 'Titular' : 'Dependente');
+    }
+  };
+
+  const removeAgeTag = (id: string) => {
+    setAgeTags(ageTags.filter(tag => tag.id !== id));
+  };
   
   const generateQuote = () => {
-    const totalDependents = dependents + 1;
+    // Create age entries for the quotes based on the tags
+    const ageEntries = ageTags.map(tag => ({
+      age: tag.age,
+      price: 150 + (tag.age / 2) // Simple calculation for demo purposes
+    }));
+
     const newQuotes = [
       {
         name: "Plano Essencial",
@@ -98,14 +125,11 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
         coverage: "Nacional",
         hospital: "Rede Básica",
         benefits: ["Consultas", "Emergências", "Exames básicos"],
-        ages: [
-          { age: age, price: 220.90 },
-          ...dependentAges.slice(0, dependents).map((dep, i) => ({ 
-            age: dep.age, 
-            price: 150.00 - (i * 15) 
-          }))
-        ],
-        totalPrice: 450.90 + (dependents * 110),
+        ages: ageEntries.map(entry => ({ 
+          age: entry.age, 
+          price: entry.price * 0.8
+        })),
+        totalPrice: 450.90 + ageEntries.reduce((sum, entry) => sum + entry.price * 0.8, 0),
         participation: true,
         planType: planType
       },
@@ -115,14 +139,11 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
         coverage: "Nacional",
         hospital: "Rede Ampliada",
         benefits: ["Consultas", "Emergências", "Exames completos", "Fisioterapia", "Terapias"],
-        ages: [
-          { age: age, price: 320.90 },
-          ...dependentAges.slice(0, dependents).map((dep, i) => ({ 
-            age: dep.age, 
-            price: 230.00 - (i * 20) 
-          }))
-        ],
-        totalPrice: 789.90 + (dependents * 195),
+        ages: ageEntries.map(entry => ({ 
+          age: entry.age, 
+          price: entry.price * 1.2
+        })),
+        totalPrice: 789.90 + ageEntries.reduce((sum, entry) => sum + entry.price * 1.2, 0),
         participation: false,
         planType: planType,
         recommended: true
@@ -133,14 +154,11 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
         coverage: "Internacional",
         hospital: "Rede Exclusiva",
         benefits: ["Consultas", "Emergências", "Exames completos", "Fisioterapia", "Terapias", "Odontologia", "Telemedicina 24h"],
-        ages: [
-          { age: age, price: 420.90 },
-          ...dependentAges.slice(0, dependents).map((dep, i) => ({ 
-            age: dep.age, 
-            price: 290.00 - (i * 25) 
-          }))
-        ],
-        totalPrice: 1250.50 + (dependents * 305),
+        ages: ageEntries.map(entry => ({ 
+          age: entry.age, 
+          price: entry.price * 1.5
+        })),
+        totalPrice: 1250.50 + ageEntries.reduce((sum, entry) => sum + entry.price * 1.5, 0),
         participation: false,
         planType: planType
       }
@@ -214,63 +232,103 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
           <CardDescription>Configure os parâmetros para gerar propostas personalizadas</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="space-y-6">
+            {/* Age Tags Section */}
             <div>
-              <label className="text-sm font-medium mb-1 block">Idade do titular</label>
-              <div className="flex items-center gap-4">
-                <Slider 
-                  value={[age]}
-                  min={18}
-                  max={85}
-                  step={1}
-                  className="flex-1"
-                  onValueChange={(values) => setAge(values[0])}
-                />
-                <span className="text-sm font-medium w-8 text-center">{age}</span>
+              <label className="text-sm font-medium mb-1 block">Idades</label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {ageTags.map((tag) => (
+                  <div 
+                    key={tag.id} 
+                    className="bg-health-100 text-health-700 px-2 py-1 rounded-full flex items-center gap-1 text-sm"
+                  >
+                    <span>{tag.relation}: {tag.age} anos</span>
+                    <button 
+                      onClick={() => removeAgeTag(tag.id)} 
+                      className="text-health-500 hover:text-health-700 ml-1"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
               </div>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium mb-1 block">Número de dependentes</label>
-              <div className="flex items-center gap-4">
-                <Slider 
-                  value={[dependents]}
+              <div className="flex items-center gap-2">
+                <Select value={newRelation} onValueChange={setNewRelation}>
+                  <SelectTrigger className="w-1/3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ageTags.length === 0 && <SelectItem value="Titular">Titular</SelectItem>}
+                    <SelectItem value="Dependente">Dependente</SelectItem>
+                    <SelectItem value="Cônjuge">Cônjuge</SelectItem>
+                    <SelectItem value="Filho(a)">Filho(a)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input 
+                  type="number" 
                   min={0}
-                  max={10}
-                  step={1}
-                  className="flex-1"
-                  onValueChange={(values) => setDependents(values[0])}
+                  placeholder="Idade" 
+                  value={newAge} 
+                  onChange={(e) => setNewAge(e.target.value)} 
+                  className="w-1/3"
                 />
-                <span className="text-sm font-medium w-8 text-center">{dependents}</span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={addAgeTag}
+                  className="flex items-center gap-1"
+                >
+                  <Plus size={14} />
+                  Adicionar
+                </Button>
               </div>
             </div>
             
-            <div>
-              <label className="text-sm font-medium mb-1 block">Tipo de plano</label>
-              <Select value={planType} onValueChange={setPlanType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pf">Pessoa Física</SelectItem>
-                  <SelectItem value="pj">Pessoa Jurídica</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium mb-1 block">Região</label>
-              <Select defaultValue="sp">
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sp">São Paulo</SelectItem>
-                  <SelectItem value="rj">Rio de Janeiro</SelectItem>
-                  <SelectItem value="mg">Minas Gerais</SelectItem>
-                  <SelectItem value="other">Outras regiões</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="text-sm font-medium mb-1 block">Tipo de plano</label>
+                <Select value={planType} onValueChange={setPlanType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pf">Pessoa Física</SelectItem>
+                    <SelectItem value="pj">Pessoa Jurídica</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium mb-1 block">Região</label>
+                <Select value={region} onValueChange={setRegion}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sp">São Paulo</SelectItem>
+                    <SelectItem value="rj">Rio de Janeiro</SelectItem>
+                    <SelectItem value="mg">Minas Gerais</SelectItem>
+                    <SelectItem value="other">Outras regiões</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {planType === 'pj' && (
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Porte da Empresa</label>
+                  <Select value={companySize} onValueChange={setCompanySize}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1-10">1-10 funcionários</SelectItem>
+                      <SelectItem value="11-50">11-50 funcionários</SelectItem>
+                      <SelectItem value="51-200">51-200 funcionários</SelectItem>
+                      <SelectItem value="201+">201+ funcionários</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           </div>
           

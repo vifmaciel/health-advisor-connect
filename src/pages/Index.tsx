@@ -31,10 +31,10 @@ const Index = () => {
       
       {/* Main Content */}
       <div className="flex flex-1 h-full overflow-hidden">
-        {/* Left Panel - Chat Interface and New Leads */}
+        {/* Left Panel - Chat Interface (expanded) */}
         <div className="w-1/4 h-full flex flex-col overflow-hidden">
-          {/* Chat Section */}
-          <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="flex-shrink-0">
+          {/* Chat Section - Now takes up full left panel */}
+          <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="flex-1">
             <div className="p-4 pb-0">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-health-800">Chat com Cliente</h3>
@@ -45,20 +45,12 @@ const Index = () => {
                 </CollapsibleTrigger>
               </div>
             </div>
-            <CollapsibleContent>
-              <div className="p-4 pt-0 h-[40vh]">
+            <CollapsibleContent className="h-full">
+              <div className="p-4 pt-0 h-full">
                 <ChatInterface clientInfo={clientInfo} />
               </div>
             </CollapsibleContent>
           </Collapsible>
-
-          {/* New Leads Widget */}
-          <div className="flex-1 p-4 overflow-y-auto">
-            <h3 className="text-xl font-bold text-health-800 mb-4">Novos Leads</h3>
-            <div className="h-full">
-              <NewLeads />
-            </div>
-          </div>
         </div>
         
         {/* Middle Panel - Quotation Generator */}
@@ -67,19 +59,25 @@ const Index = () => {
           <QuotationGenerator clientInfo={clientInfo} />
         </div>
         
-        {/* Right Panel - Dashboard Widgets */}
+        {/* Right Panel - Dashboard Widgets and New Leads */}
         <div className="w-1/4 h-full overflow-y-auto">
           <div className="p-4 space-y-4">
             <h3 className="text-xl font-bold text-health-800">Dashboard</h3>
             
             {/* Urgent Events Widget */}
-            <div className="h-[45%] mb-4">
+            <div className="h-[30%] mb-4">
               <UrgentEvents />
             </div>
             
             {/* Daily Schedule Widget */}
-            <div className="h-[45%]">
+            <div className="h-[30%] mb-4">
               <DailySchedule />
+            </div>
+            
+            {/* New Leads Widget - Moved to right panel */}
+            <div className="h-[30%]">
+              <h3 className="text-lg font-bold text-health-800 mb-2">Novos Leads</h3>
+              <NewLeads />
             </div>
           </div>
         </div>
