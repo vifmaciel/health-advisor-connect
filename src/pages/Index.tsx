@@ -9,7 +9,7 @@ import NewLeads from '@/components/dashboard/NewLeads';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowUp, Minimize, Maximize } from 'lucide-react';
 
 const Index = () => {
   const clientInfo = {
@@ -23,64 +23,102 @@ const Index = () => {
   };
 
   const [isChatOpen, setIsChatOpen] = useState(true);
+  const [isMainContentMinimized, setIsMainContentMinimized] = useState(false);
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
       {/* Left Sidebar with Icons */}
       <Sidebar />
       
-      {/* Main Content */}
-      <div className="flex flex-1 h-full overflow-hidden">
-        {/* Left Panel - Chat Interface (expanded) */}
-        <div className="w-1/4 h-full flex flex-col overflow-hidden">
-          {/* Chat Section - Now takes up full left panel */}
-          <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="flex-1">
-            <div className="p-4 pb-0">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-health-800">Chat com Cliente</h3>
-                <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="sm" className="ml-auto h-8 w-8 p-0">
-                    {isChatOpen ? <ArrowDown className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />}
-                  </Button>
-                </CollapsibleTrigger>
+      {/* Main Layout */}
+      <div className="flex flex-1 flex-col h-full overflow-hidden">
+        {/* Header with Minimize/Maximize Button */}
+        <div className="bg-white border-b border-gray-100 px-4 py-2 flex items-center justify-end">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setIsMainContentMinimized(!isMainContentMinimized)}
+            className="h-8 w-8"
+          >
+            {isMainContentMinimized ? <Maximize size={18} /> : <Minimize size={18} />}
+          </Button>
+        </div>
+      
+        {/* Main Content Area - Collapsible */}
+        <Collapsible 
+          open={!isMainContentMinimized} 
+          onOpenChange={(open) => setIsMainContentMinimized(!open)}
+          className="flex flex-1 h-full overflow-hidden"
+        >
+          <CollapsibleContent className="flex flex-1 h-full data-[state=open]:overflow-hidden">
+            <div className="flex flex-1 h-full overflow-hidden">
+              {/* Left Panel - Chat Interface (expanded) */}
+              <div className="w-1/4 h-full flex flex-col overflow-hidden">
+                {/* Chat Section - Now takes up full left panel */}
+                <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="flex-1">
+                  <div className="p-4 pb-0">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xl font-bold text-health-800">Chat com Cliente</h3>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="ml-auto h-8 w-8 p-0">
+                          {isChatOpen ? <ArrowDown className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />}
+                        </Button>
+                      </CollapsibleTrigger>
+                    </div>
+                  </div>
+                  <CollapsibleContent className="h-full">
+                    <div className="p-4 pt-0 h-full">
+                      <ChatInterface clientInfo={clientInfo} />
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+              
+              {/* Middle Panel - Quotation Generator */}
+              <div className="w-2/4 h-full bg-gray-50 border-x border-gray-100 p-4 overflow-y-auto">
+                <h3 className="text-xl font-bold text-health-800 mb-4">Gerador de Orçamentos</h3>
+                <QuotationGenerator clientInfo={clientInfo} />
+              </div>
+              
+              {/* Right Panel - Dashboard Widgets and New Leads */}
+              <div className="w-1/4 h-full overflow-y-auto">
+                <div className="p-4 space-y-4">
+                  <h3 className="text-xl font-bold text-health-800">Dashboard</h3>
+                  
+                  {/* Urgent Events Widget */}
+                  <div className="h-[30%] mb-4">
+                    <UrgentEvents />
+                  </div>
+                  
+                  {/* Daily Schedule Widget */}
+                  <div className="h-[30%] mb-4">
+                    <DailySchedule />
+                  </div>
+                  
+                  {/* New Leads Widget */}
+                  <div className="h-[30%]">
+                    <h3 className="text-lg font-bold text-health-800 mb-2">Novos Leads</h3>
+                    <NewLeads />
+                  </div>
+                </div>
               </div>
             </div>
-            <CollapsibleContent className="h-full">
-              <div className="p-4 pt-0 h-full">
-                <ChatInterface clientInfo={clientInfo} />
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        </div>
+          </CollapsibleContent>
+        </Collapsible>
         
-        {/* Middle Panel - Quotation Generator */}
-        <div className="w-2/4 h-full bg-gray-50 border-x border-gray-100 p-4 overflow-y-auto">
-          <h3 className="text-xl font-bold text-health-800 mb-4">Gerador de Orçamentos</h3>
-          <QuotationGenerator clientInfo={clientInfo} />
-        </div>
-        
-        {/* Right Panel - Dashboard Widgets and New Leads */}
-        <div className="w-1/4 h-full overflow-y-auto">
-          <div className="p-4 space-y-4">
-            <h3 className="text-xl font-bold text-health-800">Dashboard</h3>
-            
-            {/* Urgent Events Widget */}
-            <div className="h-[30%] mb-4">
-              <UrgentEvents />
-            </div>
-            
-            {/* Daily Schedule Widget */}
-            <div className="h-[30%] mb-4">
-              <DailySchedule />
-            </div>
-            
-            {/* New Leads Widget - Moved to right panel */}
-            <div className="h-[30%]">
-              <h3 className="text-lg font-bold text-health-800 mb-2">Novos Leads</h3>
-              <NewLeads />
-            </div>
+        {/* Minimized View - Shows when content is minimized */}
+        {isMainContentMinimized && (
+          <div className="flex-1 flex items-center justify-center bg-gray-50">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={() => setIsMainContentMinimized(false)}
+            >
+              <Maximize size={16} />
+              Expandir Conteúdo
+            </Button>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
