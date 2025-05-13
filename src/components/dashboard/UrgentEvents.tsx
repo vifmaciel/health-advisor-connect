@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Bell, AlertTriangle, Clock } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const UrgentEvents: React.FC = () => {
@@ -9,20 +9,20 @@ const UrgentEvents: React.FC = () => {
     {
       title: 'Renovação de plano expirando',
       client: 'José da Silva',
-      deadline: 'Hoje',
       priority: 'high',
+      overdue: true,
     },
     {
       title: 'Pendência de documentação',
       client: 'Maria Oliveira',
-      deadline: 'Amanhã',
       priority: 'medium',
+      overdue: false,
     },
     {
       title: 'Solicitação de alteração',
       client: 'Carlos Eduardo',
-      deadline: '2 dias',
       priority: 'low',
+      overdue: false,
     }
   ];
 
@@ -44,28 +44,21 @@ const UrgentEvents: React.FC = () => {
           <div 
             key={index} 
             className={cn(
-              "p-3 mb-2 rounded-md cursor-pointer hover:bg-health-50 transition-colors",
-              event.priority === 'high' ? 'border-l-4 border-red-500' : 
-              event.priority === 'medium' ? 'border-l-4 border-yellow-500' : 
-              'border-l-4 border-blue-500'
+              "p-2 mb-2 rounded-md cursor-pointer hover:bg-health-50 transition-colors border-l-4",
+              event.priority === 'high' ? 'border-red-500' : 
+              event.priority === 'medium' ? 'border-yellow-500' : 
+              'border-green-500',
+              event.overdue && 'animate-pulse'
             )}
           >
-            <div className="flex items-start justify-between">
-              <h4 className="font-medium text-sm">{event.title}</h4>
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-sm">{event.client}</span>
               <span className={cn(
-                "text-xs px-2 py-0.5 rounded",
-                event.priority === 'high' ? 'bg-red-100 text-red-700' : 
-                event.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 
-                'bg-blue-100 text-blue-700'
-              )}>
-                {event.priority === 'high' ? 'Alta' : 
-                 event.priority === 'medium' ? 'Média' : 'Baixa'}
-              </span>
-            </div>
-            <p className="text-xs text-gray-600 mt-1">Cliente: {event.client}</p>
-            <div className="flex items-center mt-2 text-xs text-gray-500">
-              <Clock size={12} className="mr-1" />
-              <span>Prazo: {event.deadline}</span>
+                "w-3 h-3 rounded-full",
+                event.priority === 'high' ? 'bg-red-500' : 
+                event.priority === 'medium' ? 'bg-yellow-500' : 
+                'bg-green-500'
+              )} />
             </div>
           </div>
         ))}
