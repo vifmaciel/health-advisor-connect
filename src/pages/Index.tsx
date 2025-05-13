@@ -31,8 +31,8 @@ const Index = () => {
       
       {/* Main Content */}
       <div className="flex flex-1 h-full overflow-hidden">
-        {/* Left Panel - Chat Interface and Dashboard Widgets */}
-        <div className="w-1/3 h-full flex flex-col overflow-hidden">
+        {/* Left Panel - Chat Interface and New Leads */}
+        <div className="w-1/4 h-full flex flex-col overflow-hidden">
           {/* Chat Section */}
           <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="flex-shrink-0">
             <div className="p-4 pb-0">
@@ -52,31 +52,36 @@ const Index = () => {
             </CollapsibleContent>
           </Collapsible>
 
-          {/* Dashboard Widgets */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-4">
-            <h3 className="text-xl font-bold text-health-800 mb-4">Dashboard</h3>
-            
-            {/* Urgent Events Widget */}
-            <div className="h-[28%]">
-              <UrgentEvents />
-            </div>
-            
-            {/* Daily Schedule Widget */}
-            <div className="h-[28%]">
-              <DailySchedule />
-            </div>
-            
-            {/* New Leads Widget */}
-            <div className="h-[28%]">
+          {/* New Leads Widget */}
+          <div className="flex-1 p-4 overflow-y-auto">
+            <h3 className="text-xl font-bold text-health-800 mb-4">Novos Leads</h3>
+            <div className="h-full">
               <NewLeads />
             </div>
           </div>
         </div>
         
-        {/* Right Panel - Quotation Generator (Wider) */}
-        <div className="w-2/3 h-full bg-gray-50 border-x border-gray-100 p-4 overflow-y-auto">
+        {/* Middle Panel - Quotation Generator */}
+        <div className="w-2/4 h-full bg-gray-50 border-x border-gray-100 p-4 overflow-y-auto">
           <h3 className="text-xl font-bold text-health-800 mb-4">Gerador de Orçamentos</h3>
           <QuotationGenerator clientInfo={clientInfo} />
+        </div>
+        
+        {/* Right Panel - Dashboard Widgets */}
+        <div className="w-1/4 h-full overflow-y-auto">
+          <div className="p-4 space-y-4">
+            <h3 className="text-xl font-bold text-health-800">Dashboard</h3>
+            
+            {/* Urgent Events Widget */}
+            <div className="h-[45%] mb-4">
+              <UrgentEvents />
+            </div>
+            
+            {/* Daily Schedule Widget */}
+            <div className="h-[45%]">
+              <DailySchedule />
+            </div>
+          </div>
         </div>
       </div>
     </div>

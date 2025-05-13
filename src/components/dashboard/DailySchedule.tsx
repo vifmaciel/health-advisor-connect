@@ -73,7 +73,7 @@ const DailySchedule: React.FC = () => {
         </div>
       </CardHeader>
       <CardContent className="p-2">
-        <Carousel className="w-full" setActiveItem={setActiveIndex}>
+        <Carousel className="w-full">
           <CarouselContent>
             {schedule.map((item, index) => (
               <CarouselItem key={index}>
