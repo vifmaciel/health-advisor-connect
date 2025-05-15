@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Send, Paperclip, Phone, Video } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
@@ -126,9 +127,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ clientInfo }) => {
       </div>
       
       {/* Message Input */}
-      <div className="mt-auto">
+      <div className="mt-auto border-t border-gray-100 pt-3">
         <div className="flex gap-2 items-center">
-          <Button size="icon" variant="ghost" className="rounded-full h-8 w-8">
+          <Button size="icon" variant="ghost" className="rounded-full h-8 w-8 flex-shrink-0">
             <Paperclip size={16} className="text-gray-500" />
           </Button>
           <Input
@@ -140,7 +141,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ clientInfo }) => {
           />
           <Button 
             size="icon" 
-            className="rounded-full bg-health-600 hover:bg-health-700 h-9 w-9"
+            className="rounded-full bg-health-600 hover:bg-health-700 h-9 w-9 flex-shrink-0"
             onClick={sendMessage}
           >
             <Send size={16} className="text-white" />
