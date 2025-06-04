@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ChevronRight, MessageSquare } from 'lucide-react';
 
 interface MessageSuggestionsProps {
   lastClientMessage: string;
@@ -12,71 +13,130 @@ const MessageSuggestions: React.FC<MessageSuggestionsProps> = ({
   lastClientMessage, 
   onSelectSuggestion 
 }) => {
-  // Gerar sugestões baseadas na última mensagem do cliente
-  const generateSuggestions = (message: string): string[] => {
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+
+  // Gerar tópicos principais baseados na última mensagem
+  const generateTopics = (message: string): {title: string, key: string}[] => {
     const lowerMessage = message.toLowerCase();
     
-    if (lowerMessage.includes('cobertura') || lowerMessage.includes('opções')) {
-      return [
-        'Temos três tipos de cobertura: básica, intermediária e premium. Qual seria do seu interesse?',
-        'Nossa cobertura nacional inclui mais de 2.000 hospitais credenciados. Gostaria de saber mais?',
-        'Posso explicar as diferenças entre cada tipo de cobertura para você.',
-        'Você tem alguma preferência de rede hospitalar específica?'
-      ];
-    }
-    
-    if (lowerMessage.includes('preço') || lowerMessage.includes('valor') || lowerMessage.includes('quanto')) {
-      return [
-        'Vou preparar um orçamento personalizado para sua família. Preciso confirmar as idades.',
-        'O valor varia conforme as idades e tipo de cobertura. Posso calcular para vocês agora.',
-        'Temos planos a partir de R$ 180,00 por pessoa. Quer que eu faça uma simulação?',
-        'Oferecemos desconto para família. Vou calcular o valor exato para vocês.'
-      ];
-    }
-    
-    if (lowerMessage.includes('família') || lowerMessage.includes('filhos') || lowerMessage.includes('dependentes')) {
-      return [
-        'Para plano familiar, preciso das idades de todos os dependentes. Pode me informar?',
-        'Temos condições especiais para famílias com filhos. Quantos anos eles têm?',
-        'O plano familiar oferece economia significativa. Vou calcular para vocês.',
-        'Filhos até 18 anos têm desconto especial. Qual a idade deles?'
-      ];
-    }
-    
-    if (lowerMessage.includes('hospital') || lowerMessage.includes('rede') || lowerMessage.includes('médico')) {
-      return [
-        'Nossa rede inclui os principais hospitais da região. Tem algum de preferência?',
-        'Posso verificar se seu médico atual está na nossa rede credenciada.',
-        'Temos parcerias com Hospital Albert Einstein, Sírio-Libanês e outros. Interesse em algum?',
-        'A rede varia por tipo de plano. Qual cobertura você considera?'
-      ];
-    }
-    
-    // Sugestões padrão
-    return [
-      'Posso esclarecer alguma dúvida específica sobre nossos planos?',
-      'Gostaria que eu prepare um orçamento personalizado para você?',
-      'Tem alguma preferência de rede hospitalar ou cobertura?',
-      'Quer que eu explique melhor algum benefício dos nossos planos?'
+    const allTopics = [
+      { title: 'Cobertura e Rede', key: 'coverage' },
+      { title: 'Preços e Valores', key: 'pricing' },
+      { title: 'Coparticipação', key: 'coparticipation' },
+      { title: 'Família e Dependentes', key: 'family' },
+      { title: 'Documentação', key: 'documentation' },
+      { title: 'Contratação', key: 'contracting' }
     ];
+
+    // Priorizar tópicos baseados na mensagem
+    if (lowerMessage.includes('cobertura') || lowerMessage.includes('hospital')) {
+      return [allTopics[0], ...allTopics.slice(1)];
+    }
+    if (lowerMessage.includes('preço') || lowerMessage.includes('valor')) {
+      return [allTopics[1], ...allTopics.filter((_, i) => i !== 1)];
+    }
+    if (lowerMessage.includes('coparticipação')) {
+      return [allTopics[2], ...allTopics.filter((_, i) => i !== 2)];
+    }
+    
+    return allTopics;
   };
 
-  const suggestions = generateSuggestions(lastClientMessage);
+  // Gerar mensagens para cada tópico
+  const getTopicMessages = (topicKey: string): string[] => {
+    const messages = {
+      coverage: [
+        'Nossa rede inclui mais de 2.000 hospitais credenciados nacionalmente.',
+        'Temos cobertura em hospitais como Albert Einstein, Sírio-Libanês e Hospital das Clínicas.',
+        'A cobertura nacional permite atendimento em qualquer estado do Brasil.',
+        'Posso verificar se seu médico atual está na nossa rede credenciada.'
+      ],
+      pricing: [
+        'O valor varia conforme idade e tipo de cobertura. Posso calcular para sua família.',
+        'Temos planos a partir de R$ 180,00 por pessoa com desconto familiar.',
+        'Oferecemos condições especiais para pagamento anual.',
+        'Posso preparar um orçamento personalizado considerando suas necessidades.'
+      ],
+      coparticipation: [
+        'A coparticipação é um valor fixo pago a cada consulta ou exame.',
+        'Planos sem coparticipação têm mensalidade um pouco maior, mas sem custos extras.',
+        'Com coparticipação: consulta R$ 25, exames simples R$ 35, exames complexos R$ 65.',
+        'Internações e emergências nunca têm coparticipação, independente do plano.'
+      ],
+      family: [
+        'Filhos até 18 anos têm desconto de até 50% na mensalidade.',
+        'Cônjuge tem desconto de 15% quando incluído no plano familiar.',
+        'Máximo de 6 dependentes por titular.',
+        'Preciso das idades exatas para calcular o valor familiar correto.'
+      ],
+      documentation: [
+        'Para contratação: RG, CPF, comprovante de renda e residência.',
+        'Dependentes: certidão de nascimento ou casamento.',
+        'Declaração de saúde obrigatória para todos os beneficiários.',
+        'Processo de análise leva até 7 dias úteis.'
+      ],
+      contracting: [
+        'Posso enviar a proposta por WhatsApp para assinatura digital.',
+        'Plano fica ativo em até 2 dias úteis após aprovação.',
+        'Primeira mensalidade pode ser paga via PIX, cartão ou boleto.',
+        'Você recebe as carteirinhas por email e correio em até 5 dias.'
+      ]
+    };
+    
+    return messages[topicKey as keyof typeof messages] || [];
+  };
+
+  const topics = generateTopics(lastClientMessage);
+
+  if (selectedTopic) {
+    const messages = getTopicMessages(selectedTopic);
+    return (
+      <Card className="p-3 bg-white border border-gray-200 shadow-sm">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-xs font-medium text-gray-600">
+            {topics.find(t => t.key === selectedTopic)?.title}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0"
+            onClick={() => setSelectedTopic(null)}
+          >
+            ×
+          </Button>
+        </div>
+        <div className="space-y-2">
+          {messages.map((message, index) => (
+            <Button
+              key={index}
+              variant="ghost"
+              className="w-full text-left justify-start h-auto p-2 text-sm text-gray-700 hover:bg-gray-50 whitespace-normal"
+              onClick={() => onSelectSuggestion(message)}
+            >
+              <MessageSquare size={14} className="mr-2 flex-shrink-0" />
+              {message}
+            </Button>
+          ))}
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-3 bg-white border border-gray-200 shadow-sm">
       <div className="mb-2">
-        <span className="text-xs font-medium text-gray-600">Sugestões de resposta:</span>
+        <span className="text-xs font-medium text-gray-600">Tópicos de resposta:</span>
       </div>
       <div className="space-y-2">
-        {suggestions.map((suggestion, index) => (
+        {topics.slice(0, 4).map((topic, index) => (
           <Button
             key={index}
             variant="ghost"
-            className="w-full text-left justify-start h-auto p-2 text-sm text-gray-700 hover:bg-gray-50 whitespace-normal"
-            onClick={() => onSelectSuggestion(suggestion)}
+            className="w-full text-left justify-between h-auto p-2 text-sm text-gray-700 hover:bg-gray-50"
+            onClick={() => setSelectedTopic(topic.key)}
           >
-            {suggestion}
+            <span>{topic.title}</span>
+            <ChevronRight size={14} />
           </Button>
         ))}
       </div>

@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Send, Paperclip, Phone, Video, ChevronUp, ChevronDown } from 'lucide-react';
+import { Send, Paperclip, Phone, Video, ChevronUp, ChevronDown, Minimize2 } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import MessageSuggestions from './MessageSuggestions';
+import ClientExtractedData from './ClientExtractedData';
 
 interface ClientInfo {
   name: string;
@@ -20,6 +22,7 @@ interface ClientInfo {
 
 interface ChatInterfaceProps {
   clientInfo: ClientInfo;
+  onMinimize?: () => void;
 }
 
 export interface QuotationData {
@@ -33,27 +36,41 @@ export interface QuotationData {
   participation?: boolean;
   planType?: string;
   recommended?: boolean;
+  insuranceName?: string;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ clientInfo }) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ clientInfo, onMinimize }) => {
   const [message, setMessage] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [chatHistory, setChatHistory] = useState([
     { sender: 'client', text: 'Olá, estou interessado em um plano de saúde para minha família.' },
     { sender: 'advisor', text: 'Olá! Ficarei feliz em ajudar você a encontrar o plano ideal. Poderia me dizer quantas pessoas seriam incluídas no plano?' },
     { sender: 'client', text: 'Eu, minha esposa e nossos dois filhos, totalizando 4 pessoas.' },
+    { sender: 'client', text: 'Gostaria de saber sobre as opções de cobertura e valores.' },
   ]);
+
+  // Dados extraídos do cliente
+  const clientData = {
+    name: clientInfo.name,
+    phone: clientInfo.phone || '(11) 98765-4321',
+    email: clientInfo.email || 'joao.silva@email.com',
+    leadCode: 'LD-2024-001',
+    conversationSummary: 'Cliente interessado em plano familiar para 4 pessoas. Demonstrou interesse em cobertura nacional e está preocupado com valores. Mencionou ter dois filhos.',
+    status: 'em_negociacao' as const,
+    interests: ['Plano Familiar', 'Cobertura Nacional', 'Preço Competitivo', 'Pediatria']
+  };
 
   const sendMessage = () => {
     if (message.trim()) {
       setChatHistory([...chatHistory, { sender: 'advisor', text: message }]);
       setMessage('');
+      setShowSuggestions(false);
       
       // Simulate client response after a delay
       setTimeout(() => {
         setChatHistory(prev => [...prev, { 
           sender: 'client', 
-          text: 'Entendo. E quais seriam as opções de cobertura disponíveis?' 
+          text: 'Entendi. E sobre as regras de coparticipação? Como funciona?' 
         }]);
       }, 3000);
     }
@@ -62,7 +79,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ clientInfo }) => {
   // Function to be called from QuotationGenerator
   const sendQuotationToChat = (quotation: QuotationData) => {
     const quotationText = `
-      *Orçamento - ${quotation.name}*
+      *Orçamento - ${quotation.insuranceName} ${quotation.name}*
       ${quotation.coverage === 'Nacional' ? 'Cobertura Nacional' : 'Cobertura Regional'}
       ${quotation.planType === 'pf' ? 'Pessoa Física' : 'Pessoa Jurídica'}
       ${quotation.participation ? 'Com coparticipação' : 'Sem coparticipação'}
@@ -96,7 +113,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ clientInfo }) => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Client Info Panel - Simplified */}
+      {/* Client Info Panel */}
       <Card className="p-3 mb-3 bg-white shadow-sm">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 border-2 border-health-500">
@@ -115,9 +132,22 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ clientInfo }) => {
             <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full">
               <Video size={16} className="text-health-600" />
             </Button>
+            {onMinimize && (
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="h-8 w-8 rounded-full"
+                onClick={onMinimize}
+              >
+                <Minimize2 size={16} className="text-health-600" />
+              </Button>
+            )}
           </div>
         </div>
       </Card>
+
+      {/* Client Extracted Data */}
+      <ClientExtractedData clientData={clientData} />
       
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto px-2 mb-3 space-y-3">

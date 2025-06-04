@@ -6,11 +6,9 @@ import { ArrowDown, ArrowUp } from 'lucide-react';
 import SimulationFilters from './SimulationFilters';
 import AutoPopulationService from './AutoPopulationService';
 import { QuotationData } from '../chat/ChatInterface';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Input } from '@/components/ui/input';
-import { Check, Plus, Send, MessageSquare, ArrowDown as ArrowDownIcon, ArrowUp as ArrowUpIcon, X } from 'lucide-react';
+import { Check, Send, MessageSquare, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ClientInfo {
@@ -35,6 +33,7 @@ interface AgeTag {
 
 const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
+  const [selectedInsurance, setSelectedInsurance] = useState('bradesco');
   const [chatHistory, setChatHistory] = useState([
     { sender: 'client', text: 'Olá, estou interessado em um plano de saúde para minha família.' },
     { sender: 'advisor', text: 'Olá! Ficarei feliz em ajudar você a encontrar o plano ideal. Poderia me dizer quantas pessoas seriam incluídas no plano?' },
@@ -51,58 +50,137 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
   const [companySize, setCompanySize] = useState('1-10');
   const [showAllPlans, setShowAllPlans] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
+
+  // Operadoras disponíveis
+  const insuranceOptions = [
+    { value: 'bradesco', label: 'Bradesco Saúde' },
+    { value: 'amil', label: 'Amil' },
+    { value: 'sulamérica', label: 'SulAmérica' }
+  ];
+
+  // Gerar cotações baseadas na operadora selecionada
+  const generateQuotesForInsurance = (insurance: string) => {
+    const ageEntries = ageTags.map(tag => ({
+      age: tag.age,
+      price: 150 + (tag.age / 2)
+    }));
+
+    const baseQuotes = {
+      bradesco: [
+        {
+          name: "Bradesco Saúde Nacional Flex",
+          basePrice: 420.90,
+          coverage: "Nacional",
+          hospital: "Rede Bradesco + Hospitais Premium",
+          benefits: ["Consultas", "Emergências", "Exames completos", "Fisioterapia"],
+          participation: true,
+          multiplier: 0.8
+        },
+        {
+          name: "Bradesco Saúde Nacional Plus",
+          basePrice: 680.90,
+          coverage: "Nacional", 
+          hospital: "Rede Completa + Albert Einstein",
+          benefits: ["Consultas", "Emergências", "Exames completos", "Fisioterapia", "Terapias", "Check-up"],
+          participation: false,
+          multiplier: 1.1,
+          recommended: true
+        },
+        {
+          name: "Bradesco Saúde Top Premium",
+          basePrice: 980.50,
+          coverage: "Internacional",
+          hospital: "Rede Exclusiva Premium",
+          benefits: ["Consultas", "Emergências", "Exames completos", "Fisioterapia", "Terapias", "Odontologia", "Telemedicina 24h", "Medicina Preventiva"],
+          participation: false,
+          multiplier: 1.4
+        }
+      ],
+      amil: [
+        {
+          name: "Amil Fácil",
+          basePrice: 380.90,
+          coverage: "Regional",
+          hospital: "Rede Amil Básica",
+          benefits: ["Consultas", "Emergências", "Exames básicos"],
+          participation: true,
+          multiplier: 0.7
+        },
+        {
+          name: "Amil Blue",
+          basePrice: 620.90,
+          coverage: "Nacional",
+          hospital: "Rede Amil + Hospitais Conveniados",
+          benefits: ["Consultas", "Emergências", "Exames completos", "Fisioterapia", "Psicologia"],
+          participation: false,
+          multiplier: 1.0,
+          recommended: true
+        },
+        {
+          name: "Amil One",
+          basePrice: 1180.50,
+          coverage: "Internacional",
+          hospital: "Rede Premium + Sírio-Libanês",
+          benefits: ["Consultas", "Emergências", "Exames completos", "Fisioterapia", "Terapias", "Odontologia", "Medicina Preventiva", "Concierge"],
+          participation: false,
+          multiplier: 1.5
+        }
+      ],
+      sulamérica: [
+        {
+          name: "SulAmérica Clássico",
+          basePrice: 450.90,
+          coverage: "Regional",
+          hospital: "Rede SulAmérica",
+          benefits: ["Consultas", "Emergências", "Exames básicos", "Fisioterapia"],
+          participation: true,
+          multiplier: 0.8
+        },
+        {
+          name: "SulAmérica Especial",
+          basePrice: 720.90,
+          coverage: "Nacional",
+          hospital: "Rede Ampliada + Hospital das Clínicas",
+          benefits: ["Consultas", "Emergências", "Exames completos", "Fisioterapia", "Terapias", "Psicologia"],
+          participation: false,
+          multiplier: 1.2,
+          recommended: true
+        },
+        {
+          name: "SulAmérica Executivo",
+          basePrice: 1050.50,
+          coverage: "Internacional",
+          hospital: "Rede Premium Exclusiva",
+          benefits: ["Consultas", "Emergências", "Exames completos", "Fisioterapia", "Terapias", "Odontologia", "Medicina Preventiva", "Telemedicina"],
+          participation: false,
+          multiplier: 1.3
+        }
+      ]
+    };
+
+    const quotes = baseQuotes[insurance as keyof typeof baseQuotes] || baseQuotes.bradesco;
+    
+    return quotes.map(quote => ({
+      name: quote.name,
+      price: quote.basePrice,
+      coverage: quote.coverage,
+      hospital: quote.hospital,
+      benefits: quote.benefits,
+      ages: ageEntries.map(entry => ({ 
+        age: entry.age, 
+        price: entry.price * quote.multiplier
+      })),
+      totalPrice: quote.basePrice + ageEntries.reduce((sum, entry) => sum + entry.price * quote.multiplier, 0),
+      participation: quote.participation,
+      planType: planType,
+      recommended: quote.recommended,
+      insuranceName: insuranceOptions.find(ins => ins.value === insurance)?.label
+    }));
+  };
   
-  const [generatedQuotes, setGeneratedQuotes] = useState<Array<QuotationData>>([
-    {
-      name: "Plano Essencial",
-      price: 450.90,
-      coverage: "Nacional",
-      hospital: "Rede Básica",
-      benefits: ["Consultas", "Emergências", "Exames básicos"],
-      ages: [
-        { age: 42, price: 220.90 },
-        { age: 38, price: 190.00 },
-        { age: 12, price: 120.00 },
-        { age: 8, price: 100.00 },
-      ],
-      totalPrice: 630.90,
-      participation: true,
-      planType: 'pf'
-    },
-    {
-      name: "Plano Premium",
-      price: 789.90,
-      coverage: "Nacional",
-      hospital: "Rede Ampliada",
-      benefits: ["Consultas", "Emergências", "Exames completos", "Fisioterapia", "Terapias"],
-      ages: [
-        { age: 42, price: 320.90 },
-        { age: 38, price: 290.00 },
-        { age: 12, price: 140.00 },
-        { age: 8, price: 115.00 },
-      ],
-      totalPrice: 865.90,
-      participation: false,
-      planType: 'pf',
-      recommended: true
-    },
-    {
-      name: "Plano Master",
-      price: 1250.50,
-      coverage: "Internacional",
-      hospital: "Rede Exclusiva",
-      benefits: ["Consultas", "Emergências", "Exames completos", "Fisioterapia", "Terapias", "Odontologia", "Telemedicina 24h"],
-      ages: [
-        { age: 42, price: 420.90 },
-        { age: 38, price: 390.00 },
-        { age: 12, price: 190.00 },
-        { age: 8, price: 165.00 },
-      ],
-      totalPrice: 1165.90,
-      participation: false,
-      planType: 'pf'
-    }
-  ]);
+  const [generatedQuotes, setGeneratedQuotes] = useState<Array<QuotationData>>(
+    generateQuotesForInsurance('bradesco')
+  );
 
   const addAgeTag = () => {
     if (newAge && parseInt(newAge) > 0) {
@@ -122,64 +200,13 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
   };
   
   const generateQuote = () => {
-    // Create age entries for the quotes based on the tags
-    const ageEntries = ageTags.map(tag => ({
-      age: tag.age,
-      price: 150 + (tag.age / 2) // Simple calculation for demo purposes
-    }));
-
-    const newQuotes = [
-      {
-        name: "Plano Essencial",
-        price: 450.90,
-        coverage: "Nacional",
-        hospital: "Rede Básica",
-        benefits: ["Consultas", "Emergências", "Exames básicos"],
-        ages: ageEntries.map(entry => ({ 
-          age: entry.age, 
-          price: entry.price * 0.8
-        })),
-        totalPrice: 450.90 + ageEntries.reduce((sum, entry) => sum + entry.price * 0.8, 0),
-        participation: true,
-        planType: planType
-      },
-      {
-        name: "Plano Premium",
-        price: 789.90,
-        coverage: "Nacional",
-        hospital: "Rede Ampliada",
-        benefits: ["Consultas", "Emergências", "Exames completos", "Fisioterapia", "Terapias"],
-        ages: ageEntries.map(entry => ({ 
-          age: entry.age, 
-          price: entry.price * 1.2
-        })),
-        totalPrice: 789.90 + ageEntries.reduce((sum, entry) => sum + entry.price * 1.2, 0),
-        participation: false,
-        planType: planType,
-        recommended: true
-      },
-      {
-        name: "Plano Master",
-        price: 1250.50,
-        coverage: "Internacional",
-        hospital: "Rede Exclusiva",
-        benefits: ["Consultas", "Emergências", "Exames completos", "Fisioterapia", "Terapias", "Odontologia", "Telemedicina 24h"],
-        ages: ageEntries.map(entry => ({ 
-          age: entry.age, 
-          price: entry.price * 1.5
-        })),
-        totalPrice: 1250.50 + ageEntries.reduce((sum, entry) => sum + entry.price * 1.5, 0),
-        participation: false,
-        planType: planType
-      }
-    ];
-    
+    const newQuotes = generateQuotesForInsurance(selectedInsurance);
     setGeneratedQuotes(newQuotes);
   };
 
   // Send quotation to chat
   const sendToChat = (quote: QuotationData) => {
-    // @ts-ignore - Access the global function from ChatInterface
+    // @ts-ignore
     if (window.sendQuotationToChat) {
       // @ts-ignore
       window.sendQuotationToChat(quote);
@@ -188,7 +215,6 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
 
   const handleAutoPopulation = (extractedData: any) => {
     console.log('Dados extraídos do chat:', extractedData);
-    // Aqui você pode atualizar os filtros automaticamente baseado nos dados extraídos
   };
 
   const handleSimulate = () => {
@@ -200,6 +226,12 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
     console.log('Limpando filtros...');
   };
 
+  // Atualizar cotações quando a operadora mudar
+  React.useEffect(() => {
+    const newQuotes = generateQuotesForInsurance(selectedInsurance);
+    setGeneratedQuotes(newQuotes);
+  }, [selectedInsurance, ageTags, planType]);
+
   return (
     <ScrollArea className="h-full">
       <div className="p-4 space-y-4">
@@ -208,6 +240,23 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
           chatHistory={chatHistory}
           onDataExtracted={handleAutoPopulation}
         />
+
+        {/* Insurance Selector */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-health-800">Operadora:</h4>
+          <Select value={selectedInsurance} onValueChange={setSelectedInsurance}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecione a operadora" />
+            </SelectTrigger>
+            <SelectContent>
+              {insuranceOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Simulation Filters */}
         <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
@@ -230,7 +279,9 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
         {/* Generated Plans Section */}
         {generatedQuotes.length > 0 && (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-health-800">Planos Disponíveis</h3>
+            <h3 className="text-lg font-semibold text-health-800">
+              Planos {insuranceOptions.find(ins => ins.value === selectedInsurance)?.label}
+            </h3>
             
             <div className="space-y-4">
               {generatedQuotes.map((quote, index) => (
