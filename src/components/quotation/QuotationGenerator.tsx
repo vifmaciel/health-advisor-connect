@@ -177,9 +177,9 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
   };
   
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col space-y-4 overflow-hidden">
       {/* Client Info Section */}
-      <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen} className="mb-4">
+      <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <Card>
           <div className="flex justify-between items-center p-4 pb-2">
             <CardTitle className="text-health-800">Detalhes do Cliente</CardTitle>
@@ -226,7 +226,8 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
         </Card>
       </Collapsible>
 
-      <Card className="mb-4">
+      {/* Simulation Parameters */}
+      <Card>
         <CardHeader>
           <CardTitle className="text-health-800">Simulação de Planos</CardTitle>
           <CardDescription>Configure os parâmetros para gerar propostas personalizadas</CardDescription>
@@ -341,29 +342,35 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
         </CardContent>
       </Card>
       
-      <h3 className="text-lg font-semibold mb-3">Top 3 Planos Compatíveis</h3>
-      
-      <div className="flex-1 overflow-y-auto">
-        <div className="grid grid-cols-1 gap-4">
+      {/* Generated Plans Section */}
+      <div className="flex-1 flex flex-col min-h-0">
+        <h3 className="text-lg font-semibold mb-3 text-health-800">Planos Disponíveis</h3>
+        
+        <div className="flex-1 overflow-y-auto space-y-4">
           {generatedQuotes.map((quote, index) => (
             <Card 
               key={index} 
               className={cn(
-                "border-l-4",
-                quote.recommended ? "border-l-health-600" : "border-l-gray-200"
+                "border-l-4 relative",
+                quote.recommended ? "border-l-health-600 shadow-md" : "border-l-gray-200"
               )}
             >
+              {quote.recommended && (
+                <div className="absolute top-2 right-2 bg-health-600 text-white text-xs px-2 py-0.5 rounded">
+                  Recomendado
+                </div>
+              )}
               <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-lg">{quote.name}</h3>
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg text-health-800">{quote.name}</h3>
                     <p className="text-gray-500 text-sm">
                       Cobertura {quote.coverage} • {quote.hospital} • 
                       {quote.planType === 'pf' ? ' Pessoa Física' : ' Pessoa Jurídica'} • 
                       {quote.participation ? ' Com' : ' Sem'} coparticipação
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right ml-4">
                     <div className="text-xl font-bold text-health-800">
                       R$ {quote.totalPrice?.toFixed(2)}
                     </div>
@@ -373,21 +380,23 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
                 
                 {/* Age breakdown */}
                 {quote.ages && (
-                  <div className="mt-3 border-t border-gray-100 pt-2">
-                    <h4 className="text-sm font-medium mb-1">Valores por idade:</h4>
-                    <div className="grid grid-cols-2 gap-2">
+                  <div className="mb-3 border-t border-gray-100 pt-3">
+                    <h4 className="text-sm font-medium mb-2 text-health-700">Valores por beneficiário:</h4>
+                    <div className="grid grid-cols-1 gap-1">
                       {quote.ages.map((item, idx) => (
-                        <div key={idx} className="flex justify-between text-sm">
-                          <span>{idx === 0 ? 'Titular' : `Dependente ${idx}`} ({item.age} anos)</span>
-                          <span className="font-medium">R$ {item.price.toFixed(2)}</span>
+                        <div key={idx} className="flex justify-between text-sm py-1">
+                          <span className="text-gray-600">
+                            {idx === 0 ? 'Titular' : `Dependente ${idx}`} ({item.age} anos)
+                          </span>
+                          <span className="font-medium text-health-800">R$ {item.price.toFixed(2)}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
                 
-                <div className="mt-3">
-                  <h4 className="text-sm font-medium mb-1">Benefícios inclusos:</h4>
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium mb-2 text-health-700">Benefícios inclusos:</h4>
                   <div className="flex flex-wrap gap-2">
                     {quote.benefits.map((benefit, idx) => (
                       <div key={idx} className="bg-health-50 text-health-700 text-xs px-2 py-1 rounded-full flex items-center gap-1">
@@ -398,11 +407,11 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
                   </div>
                 </div>
                 
-                <div className="flex justify-between mt-4">
+                <div className="flex justify-between gap-2">
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="text-health-600 border-health-200 hover:border-health-300 hover:bg-health-50 flex items-center gap-1"
+                    className="text-health-600 border-health-200 hover:border-health-300 hover:bg-health-50 flex items-center gap-1 flex-1"
                     onClick={() => sendToChat(quote)}
                   >
                     <MessageSquare size={14} />
@@ -410,31 +419,25 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
                   </Button>
                   <Button 
                     size="sm" 
-                    className="bg-health-600 hover:bg-health-700 flex items-center gap-1"
+                    className="bg-health-600 hover:bg-health-700 flex items-center gap-1 flex-1"
                   >
                     <Send size={14} />
                     Selecionar Plano
                   </Button>
                 </div>
-                
-                {quote.recommended && (
-                  <div className="absolute top-2 right-2 bg-health-600 text-white text-xs px-2 py-0.5 rounded">
-                    Recomendado
-                  </div>
-                )}
               </CardContent>
             </Card>
           ))}
         </div>
-      </div>
 
-      <Button 
-        variant="outline"
-        className="mt-4 text-health-700 border-health-200 hover:bg-health-50 hover:border-health-300"
-        onClick={() => setShowAllPlans(!showAllPlans)}
-      >
-        {showAllPlans ? "Ver menos planos" : "Ver todos os planos disponíveis"}
-      </Button>
+        <Button 
+          variant="outline"
+          className="mt-4 text-health-700 border-health-200 hover:bg-health-50 hover:border-health-300"
+          onClick={() => setShowAllPlans(!showAllPlans)}
+        >
+          {showAllPlans ? "Ver menos planos" : "Ver todos os planos disponíveis"}
+        </Button>
+      </div>
     </div>
   );
 };
