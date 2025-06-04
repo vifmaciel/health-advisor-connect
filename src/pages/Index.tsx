@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import ChatInterface from '@/components/chat/ChatInterface';
@@ -26,12 +25,12 @@ const Index = () => {
   const [isMainContentMinimized, setIsMainContentMinimized] = useState(false);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="flex h-screen w-full">
       {/* Left Sidebar with Icons */}
       <Sidebar />
       
       {/* Main Layout */}
-      <div className="flex flex-1 flex-col h-full overflow-hidden">
+      <div className="flex flex-1 flex-col h-full">
         {/* Header with Minimize/Maximize Button */}
         <div className="bg-white border-b border-gray-100 px-4 py-2 flex items-center justify-end">
           <Button 
@@ -48,12 +47,12 @@ const Index = () => {
         <Collapsible 
           open={!isMainContentMinimized} 
           onOpenChange={(open) => setIsMainContentMinimized(!open)}
-          className="flex flex-1 h-full overflow-hidden"
+          className="flex flex-1 h-full"
         >
-          <CollapsibleContent className="flex flex-1 h-full data-[state=open]:overflow-hidden">
-            <div className="flex flex-1 h-full overflow-hidden">
+          <CollapsibleContent className="flex flex-1 h-full">
+            <div className="flex flex-1 h-full">
               {/* Left Panel - Chat Interface (expanded) */}
-              <div className="w-1/4 h-full flex flex-col overflow-hidden">
+              <div className="w-1/4 h-full flex flex-col">
                 {/* Chat Section - Now takes up full left panel */}
                 <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="flex-1">
                   <div className="p-4 pb-0">
@@ -75,9 +74,13 @@ const Index = () => {
               </div>
               
               {/* Middle Panel - Quotation Generator */}
-              <div className="w-2/4 h-full bg-gray-50 border-x border-gray-100 p-4 overflow-y-auto">
-                <h3 className="text-xl font-bold text-health-800 mb-4">Gerador de Orçamentos</h3>
-                <QuotationGenerator clientInfo={clientInfo} />
+              <div className="w-2/4 h-full bg-gray-50 border-x border-gray-100">
+                <div className="p-4 pb-0">
+                  <h3 className="text-xl font-bold text-health-800 mb-4">Gerador de Orçamentos</h3>
+                </div>
+                <div className="h-full">
+                  <QuotationGenerator clientInfo={clientInfo} />
+                </div>
               </div>
               
               {/* Right Panel - Dashboard Widgets and New Leads */}
@@ -86,17 +89,17 @@ const Index = () => {
                   <h3 className="text-xl font-bold text-health-800">Dashboard</h3>
                   
                   {/* Urgent Events Widget */}
-                  <div className="h-[30%] mb-4">
+                  <div className="mb-4">
                     <UrgentEvents />
                   </div>
                   
                   {/* Daily Schedule Widget */}
-                  <div className="h-[30%] mb-4">
+                  <div className="mb-4">
                     <DailySchedule />
                   </div>
                   
                   {/* New Leads Widget */}
-                  <div className="h-[30%]">
+                  <div>
                     <h3 className="text-lg font-bold text-health-800 mb-2">Novos Leads</h3>
                     <NewLeads />
                   </div>
