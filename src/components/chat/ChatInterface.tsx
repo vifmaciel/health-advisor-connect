@@ -1,11 +1,12 @@
-
 import React, { useState } from 'react';
-import { Send, Paperclip, Phone, Video } from 'lucide-react';
+import { Send, Paperclip, Phone, Video, ChevronUp, ChevronDown } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import MessageSuggestions from './MessageSuggestions';
 
 interface ClientInfo {
   name: string;
@@ -36,6 +37,7 @@ export interface QuotationData {
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ clientInfo }) => {
   const [message, setMessage] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [chatHistory, setChatHistory] = useState([
     { sender: 'client', text: 'Olá, estou interessado em um plano de saúde para minha família.' },
     { sender: 'advisor', text: 'Olá! Ficarei feliz em ajudar você a encontrar o plano ideal. Poderia me dizer quantas pessoas seriam incluídas no plano?' },
@@ -80,6 +82,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ clientInfo }) => {
       delete window.sendQuotationToChat;
     };
   }, [chatHistory]);
+
+  // Obter a última mensagem do cliente
+  const getLastClientMessage = () => {
+    const clientMessages = chatHistory.filter(chat => chat.sender === 'client');
+    return clientMessages.length > 0 ? clientMessages[clientMessages.length - 1].text : '';
+  };
+
+  const handleSuggestionSelect = (suggestion: string) => {
+    setMessage(suggestion);
+    setShowSuggestions(false);
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -128,6 +141,30 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ clientInfo }) => {
       
       {/* Message Input */}
       <div className="mt-auto border-t border-gray-100 pt-3">
+        {/* Suggestions Panel */}
+        <Collapsible open={showSuggestions} onOpenChange={setShowSuggestions}>
+          <CollapsibleContent className="mb-3">
+            <MessageSuggestions 
+              lastClientMessage={getLastClientMessage()}
+              onSelectSuggestion={handleSuggestionSelect}
+            />
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Suggestions Toggle Button */}
+        <div className="flex justify-center mb-2">
+          <CollapsibleTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 w-8 p-0 text-gray-500 hover:text-gray-700"
+            >
+              {showSuggestions ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+            </Button>
+          </CollapsibleTrigger>
+        </div>
+
+        {/* Input Area */}
         <div className="flex gap-2 items-center">
           <Button size="icon" variant="ghost" className="rounded-full h-8 w-8 flex-shrink-0">
             <Paperclip size={16} className="text-gray-500" />
