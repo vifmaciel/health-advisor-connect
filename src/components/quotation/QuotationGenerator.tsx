@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
+import { ArrowDown, ArrowUp } from 'lucide-react';
+import SimulationFilters from './SimulationFilters';
+import AutoPopulationService from './AutoPopulationService';
+import { QuotationData } from '../chat/ChatInterface';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
-import { Check, Plus, Send, MessageSquare, ArrowDown, ArrowUp, X } from 'lucide-react';
+import { Check, Plus, Send, MessageSquare, ArrowDown as ArrowDownIcon, ArrowUp as ArrowUpIcon, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { QuotationData } from '../chat/ChatInterface';
 
 interface ClientInfo {
   name: string;
@@ -31,6 +34,13 @@ interface AgeTag {
 }
 
 const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) => {
+  const [isFiltersOpen, setIsFiltersOpen] = useState(true);
+  const [chatHistory, setChatHistory] = useState([
+    { sender: 'client', text: 'Olá, estou interessado em um plano de saúde para minha família.' },
+    { sender: 'advisor', text: 'Olá! Ficarei feliz em ajudar você a encontrar o plano ideal. Poderia me dizer quantas pessoas seriam incluídas no plano?' },
+    { sender: 'client', text: 'Eu, minha esposa e nossos dois filhos, totalizando 4 pessoas.' },
+  ]);
+  
   const [newAge, setNewAge] = useState('');
   const [newRelation, setNewRelation] = useState('Titular');
   const [ageTags, setAgeTags] = useState<AgeTag[]>([
@@ -175,181 +185,56 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
       window.sendQuotationToChat(quote);
     }
   };
-  
+
+  const handleAutoPopulation = (extractedData: any) => {
+    console.log('Dados extraídos do chat:', extractedData);
+    // Aqui você pode atualizar os filtros automaticamente baseado nos dados extraídos
+  };
+
+  const handleSimulate = () => {
+    console.log('Executando simulação...');
+    generateQuote();
+  };
+
+  const handleClearFilters = () => {
+    console.log('Limpando filtros...');
+  };
+
   return (
     <ScrollArea className="h-full">
       <div className="p-4 space-y-4">
-        {/* Client Info Section */}
-        <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-          <Card>
-            <div className="flex justify-between items-center p-4 pb-2">
-              <CardTitle className="text-health-800">Detalhes do Cliente</CardTitle>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  {isDetailsOpen ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
-                </Button>
-              </CollapsibleTrigger>
-            </div>
-            <CollapsibleContent>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Nome</p>
-                    <p className="font-medium">{clientInfo.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Idade</p>
-                    <p className="font-medium">{clientInfo.age} anos</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Telefone</p>
-                    <p className="font-medium">{clientInfo.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium">{clientInfo.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Localização</p>
-                    <p className="font-medium">{clientInfo.location}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Plano Atual</p>
-                    <p className="font-medium">{clientInfo.healthPlan || 'Nenhum'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Dependentes</p>
-                    <p className="font-medium">{clientInfo.dependents || 0}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
+        {/* Auto-population Service */}
+        <AutoPopulationService 
+          chatHistory={chatHistory}
+          onDataExtracted={handleAutoPopulation}
+        />
+
+        {/* Simulation Filters */}
+        <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-bold text-health-800">Simulação de Planos</h3>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                {isFiltersOpen ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+          <CollapsibleContent>
+            <SimulationFilters 
+              onSimulate={handleSimulate}
+              onClear={handleClearFilters}
+            />
+          </CollapsibleContent>
         </Collapsible>
 
-        {/* Simulation Parameters */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-health-800">Simulação de Planos</CardTitle>
-            <CardDescription>Configure os parâmetros para gerar propostas personalizadas</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {/* Age Tags Section */}
-              <div>
-                <label className="text-sm font-medium mb-1 block">Idades</label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {ageTags.map((tag) => (
-                    <div 
-                      key={tag.id} 
-                      className="bg-health-100 text-health-700 px-2 py-1 rounded-full flex items-center gap-1 text-sm"
-                    >
-                      <span>{tag.relation}: {tag.age} anos</span>
-                      <button 
-                        onClick={() => removeAgeTag(tag.id)} 
-                        className="text-health-500 hover:text-health-700 ml-1"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Select value={newRelation} onValueChange={setNewRelation}>
-                    <SelectTrigger className="w-1/3">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ageTags.length === 0 && <SelectItem value="Titular">Titular</SelectItem>}
-                      <SelectItem value="Dependente">Dependente</SelectItem>
-                      <SelectItem value="Cônjuge">Cônjuge</SelectItem>
-                      <SelectItem value="Filho(a)">Filho(a)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Input 
-                    type="number" 
-                    min={0}
-                    placeholder="Idade" 
-                    value={newAge} 
-                    onChange={(e) => setNewAge(e.target.value)} 
-                    className="w-1/3"
-                  />
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={addAgeTag}
-                    className="flex items-center gap-1"
-                  >
-                    <Plus size={14} />
-                    Adicionar
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Tipo de plano</label>
-                  <Select value={planType} onValueChange={setPlanType}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pf">Pessoa Física</SelectItem>
-                      <SelectItem value="pj">Pessoa Jurídica</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Região</label>
-                  <Select value={region} onValueChange={setRegion}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="sp">São Paulo</SelectItem>
-                      <SelectItem value="rj">Rio de Janeiro</SelectItem>
-                      <SelectItem value="mg">Minas Gerais</SelectItem>
-                      <SelectItem value="other">Outras regiões</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {planType === 'pj' && (
-                  <div>
-                    <label className="text-sm font-medium mb-1 block">Porte da Empresa</label>
-                    <Select value={companySize} onValueChange={setCompanySize}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1-10">1-10 funcionários</SelectItem>
-                        <SelectItem value="11-50">11-50 funcionários</SelectItem>
-                        <SelectItem value="51-200">51-200 funcionários</SelectItem>
-                        <SelectItem value="201+">201+ funcionários</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <Button 
-              className="w-full mt-6 bg-health-600 hover:bg-health-700"
-              onClick={generateQuote}
-            >
-              Gerar Orçamentos
-            </Button>
-          </CardContent>
-        </Card>
-        
         {/* Generated Plans Section */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-health-800">Planos Disponíveis</h3>
-          
+        {generatedQuotes.length > 0 && (
           <div className="space-y-4">
-            {generatedQuotes.map((quote, index) => (
-              <Card 
+            <h3 className="text-lg font-semibold text-health-800">Planos Disponíveis</h3>
+            
+            <div className="space-y-4">
+              {generatedQuotes.map((quote, index) => (
+                <Card 
                 key={index} 
                 className={cn(
                   "border-l-4 relative",
@@ -428,17 +313,18 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({ clientInfo }) =
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          <Button 
-            variant="outline"
-            className="w-full mt-4 text-health-700 border-health-200 hover:bg-health-50 hover:border-health-300"
-            onClick={() => setShowAllPlans(!showAllPlans)}
-          >
-            {showAllPlans ? "Ver menos planos" : "Ver todos os planos disponíveis"}
-          </Button>
-        </div>
+            <Button 
+              variant="outline"
+              className="w-full mt-4 text-health-700 border-health-200 hover:bg-health-50 hover:border-health-300"
+              onClick={() => setShowAllPlans(!showAllPlans)}
+            >
+              {showAllPlans ? "Ver menos planos" : "Ver todos os planos disponíveis"}
+            </Button>
+          </div>
+        )}
       </div>
     </ScrollArea>
   );
