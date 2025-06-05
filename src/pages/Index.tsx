@@ -7,6 +7,8 @@ import UrgentEvents from '@/components/dashboard/UrgentEvents';
 import DailySchedule from '@/components/dashboard/DailySchedule';
 import NewLeads from '@/components/dashboard/NewLeads';
 import ClientSelector from '@/components/client/ClientSelector';
+import MinimizedClientsBar from '@/components/client/MinimizedClientsBar';
+import BackgroundController from '@/components/layout/BackgroundController';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -53,6 +55,7 @@ const Index = () => {
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [isMainContentMinimized, setIsMainContentMinimized] = useState(false);
   const [showClientSelector, setShowClientSelector] = useState(false);
+  const [backgroundStyle, setBackgroundStyle] = useState('#f8fafc');
 
   const selectedClient = clients.find(client => client.id === selectedClientId) || clients[0];
   
@@ -66,15 +69,26 @@ const Index = () => {
     location: "São Paulo, SP"
   };
 
+  const handleBackgroundChange = (background: string) => {
+    setBackgroundStyle(background);
+  };
+
+  const getBackgroundStyle = () => {
+    if (backgroundStyle.includes('linear-gradient') || backgroundStyle.includes('url(')) {
+      return { background: backgroundStyle };
+    }
+    return { backgroundColor: backgroundStyle };
+  };
+
   return (
-    <div className="flex h-screen w-full">
+    <div className="flex h-screen w-full" style={getBackgroundStyle()}>
       {/* Left Sidebar with Icons */}
       <Sidebar />
       
       {/* Main Layout */}
       <div className="flex flex-1 flex-col h-full">
         {/* Header with Controls */}
-        <div className="bg-white border-b border-gray-100 px-4 py-2 flex items-center justify-between">
+        <div className="bg-white/90 backdrop-blur-sm border-b border-gray-100 px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Button 
               variant="ghost" 
@@ -89,6 +103,7 @@ const Index = () => {
           </div>
           
           <div className="flex items-center gap-2">
+            <BackgroundController onBackgroundChange={handleBackgroundChange} />
             <Button 
               variant="ghost" 
               size="icon" 
@@ -112,7 +127,7 @@ const Index = () => {
 
         {/* Client Selector Dropdown */}
         {showClientSelector && (
-          <div className="absolute top-12 left-20 z-50 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
+          <div className="absolute top-12 left-20 z-50 w-80 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-lg p-4">
             <div className="mb-3">
               <h3 className="font-medium text-gray-900">Selecionar Cliente</h3>
             </div>
@@ -172,7 +187,7 @@ const Index = () => {
                       </div>
                       
                       {/* Right Panel - Quotation Generator */}
-                      <div className="w-1/2 h-full bg-gray-50 border-l border-gray-100">
+                      <div className="w-1/2 h-full bg-white/50 backdrop-blur-sm border-l border-gray-100">
                         <div className="p-4 pb-0">
                           <h3 className="text-xl font-bold text-health-800 mb-4">Gerador de Orçamentos</h3>
                         </div>
@@ -186,7 +201,7 @@ const Index = () => {
 
                 {/* Minimized Client Area */}
                 {isClientAreaMinimized && (
-                  <div className="w-16 h-full bg-gray-100 border-r border-gray-200 flex flex-col items-center justify-center">
+                  <div className="w-16 h-full bg-white/50 backdrop-blur-sm border-r border-gray-200 flex flex-col items-center justify-center">
                     <Button 
                       variant="ghost" 
                       size="icon"
@@ -204,7 +219,7 @@ const Index = () => {
               
               {/* Right Panel - Dashboard Widgets */}
               <div className={cn(
-                "h-full overflow-y-auto bg-white border-l border-gray-100 transition-all duration-300",
+                "h-full overflow-y-auto bg-white/50 backdrop-blur-sm border-l border-gray-100 transition-all duration-300",
                 isClientAreaMinimized ? "w-full" : "w-1/4"
               )}>
                 <div className="p-4 space-y-4">
@@ -233,10 +248,10 @@ const Index = () => {
         
         {/* Minimized View - Shows when content is minimized */}
         {isMainContentMinimized && (
-          <div className="flex-1 flex items-center justify-center bg-gray-50">
+          <div className="flex-1 flex items-center justify-center">
             <Button 
               variant="outline" 
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-white/80 backdrop-blur-sm"
               onClick={() => setIsMainContentMinimized(false)}
             >
               <Maximize size={16} />
@@ -245,6 +260,15 @@ const Index = () => {
           </div>
         )}
       </div>
+
+      {/* Minimized Clients Bar */}
+      {isClientAreaMinimized && (
+        <MinimizedClientsBar
+          clients={clients}
+          onSelectClient={setSelectedClientId}
+          onExpand={() => setIsClientAreaMinimized(false)}
+        />
+      )}
     </div>
   );
 };

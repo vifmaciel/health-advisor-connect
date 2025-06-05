@@ -113,7 +113,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ clientInfo, onMinimize })
 
   return (
     <div className="flex flex-col h-full">
-      {/* Client Info Panel */}
+      {/* Client Info Panel - Dados básicos do cliente */}
       <Card className="p-3 mb-3 bg-white shadow-sm">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 border-2 border-health-500">
@@ -146,7 +146,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ clientInfo, onMinimize })
         </div>
       </Card>
 
-      {/* Client Extracted Data */}
+      {/* Client Extracted Data - Dados extraídos da conversa */}
       <ClientExtractedData clientData={clientData} />
       
       {/* Chat Messages */}
